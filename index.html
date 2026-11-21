@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#6f4b82">
+<title>Keuangan WYLIE HANDCRAFTED</title>
+<style>
+:root{--purple:#6f4b82;--pale:#f5eff8;--ink:#282330;--muted:#766f7d;--green:#16845b;--red:#c24d59;--line:#e9e3ed}
+*{box-sizing:border-box}body{margin:0;background:#f7f5f8;color:var(--ink);font:15px system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:linear-gradient(135deg,#674477,#9875a7);color:white;padding:23px 18px 20px;border-radius:0 0 24px 24px}
+header h1{font-size:21px;margin:0 0 4px}header p{margin:0;opacity:.88;font-size:13px}
+main{max-width:760px;margin:auto;padding:15px 14px 92px}
+.tabs{display:flex;gap:7px;overflow:auto;margin:0 0 15px}.tab{border:0;border-radius:20px;padding:10px 14px;background:white;color:var(--muted);font-weight:650;white-space:nowrap}.tab.active{background:var(--purple);color:white}
+.panel{display:none}.panel.active{display:block}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:13px}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}.card small{color:var(--muted);display:block;margin-bottom:7px}.amount{font-size:19px;font-weight:800;overflow-wrap:anywhere}.green{color:var(--green)}.red{color:var(--red)}
+h2{font-size:17px;margin:18px 0 10px}.card h2{margin:0 0 10px}
+label{font-size:13px;font-weight:650;display:block;margin:11px 0 6px}input,select,textarea{width:100%;padding:12px;border:1px solid #ddd4e4;border-radius:11px;background:white;font:inherit;color:var(--ink)}button{font:inherit;cursor:pointer}
+.primary{background:var(--purple);color:white;border:0;border-radius:11px;padding:13px 16px;font-weight:700;width:100%;margin-top:14px}.secondary{background:var(--pale);color:var(--purple);border:0;border-radius:10px;padding:10px 12px;font-weight:650}.danger{background:#fff0f1;color:var(--red);border:0;border-radius:9px;padding:8px 10px}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.list{display:grid;gap:9px}.entry{background:white;border:1px solid var(--line);border-radius:13px;padding:12px;display:flex;align-items:center;gap:10px}.entry .desc{flex:1;min-width:0}.entry strong{display:block;overflow-wrap:anywhere}.entry small{color:var(--muted)}.entry .val{font-weight:800;white-space:nowrap}
+.empty{padding:24px;text-align:center;color:var(--muted);background:white;border-radius:13px;border:1px dashed var(--line)}
+.note{font-size:12px;color:var(--muted);line-height:1.5}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{flex:1}
+hr{border:0;border-top:1px solid var(--line);margin:15px 0}
+@media(min-width:600px){.cards{grid-template-columns:repeat(4,1fr)}}
+</style>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#6f4b82">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="WYLIE Keuangan">
+</head>
+<body>
+<header><h1>WYLIE HANDCRAFTED</h1><p>Catatan Keuangan Toko · Every Piece Has a Story</p></header>
+<main>
+<nav class="tabs">
+<button class="tab active" data-tab="ringkasan">Ringkasan</button>
+<button class="tab" data-tab="catat">Tambah Catatan</button>
+<button class="tab" data-tab="laporan">Laporan</button>
+<button class="tab" data-tab="data">Cadangkan Data</button>
+</nav>
+<section id="ringkasan" class="panel active">
+<div class="cards">
+<div class="card"><small>Total pemasukan</small><div id="sumIn" class="amount green">Rp0</div></div>
+<div class="card"><small>Total pengeluaran</small><div id="sumOut" class="amount red">Rp0</div></div>
+<div class="card"><small>Selisih kas</small><div id="balance" class="amount">Rp0</div></div>
+<div class="card"><small>Jumlah transaksi</small><div id="count" class="amount">0</div></div>
+</div>
+<div class="card">
+<h2>Ringkasan bulan ini</h2>
+<div class="row"><div><small class="note">Pemasukan</small><div id="monthIn" class="amount green">Rp0</div></div><div><small class="note">Pengeluaran</small><div id="monthOut" class="amount red">Rp0</div></div></div>
+<hr><small class="note">Selisih bulan ini</small><div id="monthBalance" class="amount">Rp0</div>
+</div>
+<h2>Catatan terbaru</h2><div id="recent" class="list"></div>
+</section>
+<section id="catat" class="panel">
+<div class="card">
+<h2>Tambah pemasukan atau pengeluaran</h2>
+<form id="entryForm">
+<label for="type">Jenis catatan</label><select id="type"><option value="masuk">Pemasukan</option><option value="keluar">Pengeluaran</option></select>
+<label for="date">Tanggal</label><input id="date" type="date" required>
+<label for="category">Kategori</label><select id="category"></select>
+<label for="desc">Nama barang / keterangan</label><input id="desc" maxlength="100" placeholder="Contoh: Buket bunga mawar" required>
+<div class="row">
+<div><label for="qty">Jumlah barang</label><input id="qty" type="number" min="1" step="1" inputmode="numeric" placeholder="1"></div>
+<div><label for="purchasePrice">Harga beli satuan (Rp)</label><input id="purchasePrice" type="number" min="0" step="1" inputmode="numeric" placeholder="Opsional"></div>
+</div>
+<label for="salePrice">Harga jual satuan (Rp)</label><input id="salePrice" type="number" min="0" step="1" inputmode="numeric" placeholder="Isi jika mencatat penjualan">
+<label for="amount">Nominal transaksi (Rp)</label><input id="amount" type="number" min="1" step="1" inputmode="numeric" placeholder="Terhitung otomatis jika harga diisi" required>
+<p class="note" id="calcHint">Isi jumlah dan harga beli/jual untuk menghitung nominal otomatis. Untuk biaya lain, cukup isi nominal transaksi.</p>
+<label for="method">Metode pembayaran</label><select id="method"><option>Tunai</option><option>Transfer</option><option>QRIS</option><option>Lainnya</option></select>
+<button class="primary" type="submit">Simpan catatan</button>
+</form>
+<p class="note">Catatan tersimpan di perangkat ini. Masukkan penjualan sebagai pemasukan dan belanja bahan/biaya toko sebagai pengeluaran. Setoran modal bisa dicatat sebagai pemasukan kategori Modal (bukan keuntungan penjualan).</p>
+</div>
+</section>
+<section id="laporan" class="panel">
+<div class="card">
+<h2>Laporan berdasarkan bulan</h2>
+<label for="month">Pilih bulan</label><input id="month" type="month">
+<div class="cards" style="margin-top:13px">
+<div><small class="note">Pemasukan</small><div id="reportIn" class="amount green">Rp0</div></div>
+<div><small class="note">Pengeluaran</small><div id="reportOut" class="amount red">Rp0</div></div>
+</div>
+<hr><small class="note">Selisih pemasukan dan pengeluaran</small><div id="reportBalance" class="amount">Rp0</div>
+<hr><small class="note">Estimasi laba kotor penjualan yang memiliki harga beli dan harga jual</small><div id="grossProfit" class="amount green">Rp0</div>
+<h2>Rincian transaksi</h2><div id="reportList" class="list"></div>
+<div class="actions"><button class="secondary" id="print">Cetak / Simpan PDF</button></div>
+<p class="note">Laporan ini menghitung arus kas: pemasukan dikurangi pengeluaran. Setoran modal yang dicatat sebagai pemasukan akan ikut menambah selisih kas, jadi selisih ini belum tentu sama dengan laba usaha.</p>
+</div>
+</section>
+<section id="data" class="panel">
+<div class="card">
+<h2>Cadangkan dan pulihkan data</h2>
+<p class="note">Agar catatan tidak hilang jika HP berganti atau browser dibersihkan, unduh cadangan secara berkala.</p>
+<button class="primary" id="export">Unduh cadangan data</button>
+<label for="importFile">Pulihkan dari file cadangan</label><input id="importFile" type="file" accept="application/json">
+<p class="note">Pemulihan akan mengganti catatan yang ada di aplikasi ini dengan isi file cadangan.</p>
+<hr>
+<h2>Hapus semua catatan</h2><p class="note">Gunakan hanya jika ingin memulai dari awal. Tindakan ini tidak bisa dibatalkan.</p>
+<button class="danger" id="clear">Hapus semua data</button>
+</div>
+</section>
+</main>
+<script>
+const KEY='wylie_keuangan_v1';
+let entries=JSON.parse(localStorage.getItem(KEY)||'[]');
+const $=id=>document.getElementById(id);
+const rupiah=n=>'Rp'+Number(n||0).toLocaleString('id-ID');
+const today=()=>new Date().toLocaleDateString('en-CA');
+const monthNow=()=>today().slice(0,7);
+const cats={
+ masuk:['Penjualan','Modal','Pendapatan lainnya'],
+ keluar:['Belanja bahan','Kemasan','Peralatan toko','Operasional','Transportasi','Lainnya']
+};
+function save(){localStorage.setItem(KEY,JSON.stringify(entries));render()}
+function sums(list){return list.reduce((a,e)=>{a[e.type]+=Number(e.amount);return a},{masuk:0,keluar:0})}
+function item(e,withDelete=false){const el=document.createElement('div');el.className='entry';
+const d=document.createElement('div');d.className='desc';
+const strong=document.createElement('strong');strong.textContent=e.desc;
+const small=document.createElement('small');small.textContent=`${e.date} · ${e.category} · ${e.method}`;
+d.append(strong,small);
+const val=document.createElement('div');val.className='val '+(e.type==='masuk'?'green':'red');val.textContent=(e.type==='masuk'?'+':'−')+rupiah(e.amount);
+if(e.purchasePrice>0 && e.salePrice>0 && e.type==='masuk'){
+ const detail=document.createElement('small');detail.textContent=`Beli ${rupiah(e.purchasePrice)} · Jual ${rupiah(e.salePrice)} · Laba kotor ${rupiah((e.salePrice-e.purchasePrice)*(e.qty||1))}`;detail.style.display='block';detail.style.color='#16845b';d.append(detail);
+}
+el.append(d,val);
+if(withDelete){const b=document.createElement('button');b.className='danger';b.textContent='Hapus';b.onclick=()=>{if(confirm('Hapus catatan ini?')){entries=entries.filter(x=>x.id!==e.id);save()}};el.append(b)}
+return el}
+function fillCategories(){const type=$('type').value,sel=$('category');sel.innerHTML='';cats[type].forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.append(o)})}
+function render(){
+const s=sums(entries),m=monthNow(),ms=sums(entries.filter(e=>e.date.startsWith(m)));
+$('sumIn').textContent=rupiah(s.masuk);$('sumOut').textContent=rupiah(s.keluar);$('balance').textContent=rupiah(s.masuk-s.keluar);$('count').textContent=entries.length;
+$('monthIn').textContent=rupiah(ms.masuk);$('monthOut').textContent=rupiah(ms.keluar);$('monthBalance').textContent=rupiah(ms.masuk-ms.keluar);
+const recent=$('recent');recent.innerHTML='';entries.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id).slice(0,5).forEach(e=>recent.append(item(e)));
+if(!recent.children.length)recent.innerHTML='<div class="empty">Belum ada catatan. Mulai dengan menambahkan pemasukan atau pengeluaran.</div>';
+renderReport();
+}
+function renderReport(){const m=$('month').value||monthNow(),list=entries.filter(e=>e.date.startsWith(m)).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id),s=sums(list);
+$('reportIn').textContent=rupiah(s.masuk);$('reportOut').textContent=rupiah(s.keluar);$('reportBalance').textContent=rupiah(s.masuk-s.keluar);
+const profit=list.filter(e=>e.type==='masuk' && e.purchasePrice>0 && e.salePrice>0).reduce((a,e)=>a+(e.salePrice-e.purchasePrice)*(e.qty||1),0);
+$('grossProfit').textContent=rupiah(profit);
+const box=$('reportList');box.innerHTML='';list.forEach(e=>box.append(item(e,true)));if(!list.length)box.innerHTML='<div class="empty">Belum ada transaksi pada bulan ini.</div>'}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.tab).classList.add('active');if(b.dataset.tab==='laporan')renderReport()});
+$('type').onchange=()=>{fillCategories();calculateAmount()};
+$('date').value=today();$('month').value=monthNow();fillCategories();
+function calculateAmount(){
+ const qty=Math.max(1,Number($('qty').value)||1),buy=Number($('purchasePrice').value)||0,sell=Number($('salePrice').value)||0;
+ const type=$('type').value;
+ if(type==='masuk' && sell>0)$('amount').value=qty*sell;
+ else if(type==='keluar' && buy>0)$('amount').value=qty*buy;
+ $('calcHint').textContent=(type==='masuk' && buy>0 && sell>0)?`Perkiraan laba kotor: ${rupiah((sell-buy)*qty)} (${rupiah(sell-buy)} per barang).`:'Nominal dihitung dari jumlah × harga jual untuk pemasukan, atau jumlah × harga beli untuk pengeluaran. Bisa juga isi nominal secara manual.';
+}
+['qty','purchasePrice','salePrice'].forEach(id=>$(id).addEventListener('input',calculateAmount));
+$('entryForm').onsubmit=e=>{e.preventDefault();const amount=Number($('amount').value);if(!Number.isFinite(amount)||amount<=0)return alert('Masukkan nominal yang benar.');
+const qty=Math.max(1,Number($('qty').value)||1),purchasePrice=Number($('purchasePrice').value)||0,salePrice=Number($('salePrice').value)||0;
+entries.push({id:Date.now(),type:$('type').value,date:$('date').value,category:$('category').value,desc:$('desc').value.trim(),amount,qty,purchasePrice,salePrice,method:$('method').value});
+save();$('entryForm').reset();$('date').value=today();$('qty').value='1';fillCategories();$('calcHint').textContent='Isi jumlah dan harga beli/jual untuk menghitung nominal otomatis. Untuk biaya lain, cukup isi nominal transaksi.';alert('Catatan berhasil disimpan.');document.querySelector('[data-tab="ringkasan"]').click()};
+$('month').onchange=renderReport;
+$('print').onclick=()=>window.print();
+$('export').onclick=()=>{const blob=new Blob([JSON.stringify({app:'WYLIE HANDCRAFTED Keuangan',version:1,entries},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cadangan-keuangan-wylie-'+today()+'.json';a.click();URL.revokeObjectURL(a.href)};
+$('importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());const arr=Array.isArray(data)?data:data.entries;if(!Array.isArray(arr)||!arr.every(x=>x.type&&x.date&&x.desc&&Number(x.amount)>0))throw Error();if(confirm('Pulihkan cadangan? Catatan yang sekarang akan diganti.')){entries=arr;save();alert('Cadangan berhasil dipulihkan.')}}catch(err){alert('File cadangan tidak valid.')}e.target.value=''};
+$('clear').onclick=()=>{if(confirm('Yakin hapus SEMUA catatan keuangan?')){entries=[];save();alert('Semua catatan telah dihapus.')}};
+render();
+</script>
+<style>
+@media print{body{background:white}header,.tabs,#catat,#data,#ringkasan,.actions{display:none!important}main{padding:0}.panel#laporan{display:block!important}.card{border:0;padding:0}.danger{display:none}}
+</style>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+</script>
+</body></html>
